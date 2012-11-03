@@ -2,6 +2,7 @@ var rq = require('request');
 var xml2js = require('xml2js');
 var parser = new xml2js.Parser();
 var u = require('underscore');
+var async = require('async');
 
 var yourLat = 38.960744;
 var yourLon = -77.086258;
@@ -23,17 +24,19 @@ utility.minsFromStation = function(lat1, lon1, lat2, lon2) {
   return (20 * (3963.17 * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))))); 
 }
 
-bikeshare.fetcher = function (req, res, from) {
+bikeshare.fetcher = function (callback, from, id) {
   rq('http://capitalbikeshare.com/data/stations/bikeStations.xml', function(error, response, body) {
     if (body) {
       parser.parseString(body, function(err, result){
         switch(from) {
           case "all":
-            res.json(result); break;
+            callback.json(result); break;
           case "nearest":
-            res.json(bikeshare.getNearest(req, result)); break;
+            callback.json(bikeshare.getNearest(result)); break;
           case "station":
-            res.json(bikeshare.getStationById(req, result)); break;
+            callback.json(bikeshare.getStationById(result, id)); break;
+          case "compressor":
+            callback(null, bikeshare.cleanData(bikeshare.getNearest(result))); break;
           default:
             break;
         }
@@ -45,7 +48,27 @@ bikeshare.fetcher = function (req, res, from) {
   });
 };
 
-bikeshare.getNearest = function(req, result) {
+bikeshare.cleanData = function(data) {
+  var stations = [];
+  for (var i = 0; i < data.length; i++) {
+    var stop = data[i];
+    stations.push({ 
+      id: stop.id[0],
+      location: stop.name[0],
+      minutes: stop.minsFromStation,
+      bikes: stop.nbBikes[0],
+      docks: stop.nbEmptyDocks[0],
+      coordinates: {
+        lat: stop.lat[0],
+        lon: stop.long[0]
+      }
+    });
+  }
+  
+  return stations;
+};
+
+bikeshare.getNearest = function(result) {
   var stations = result.stations.station;
   for (var i = 0; i < stations.length; i++) {
     stations[i].minsFromStation = utility.minsFromStation(stations[i].lat[0], stations[i].long[0], yourLat, yourLon);
@@ -54,10 +77,10 @@ bikeshare.getNearest = function(req, result) {
   return u.first(stations, 3);
 };
 
-bikeshare.getStationById = function (req, result) {
+bikeshare.getStationById = function (result, id) {
   var stations = result.stations.station;
   for (var i = 0; i < stations.length; i++) {
-    if (stations[i].id == req.params.id) {
+    if (stations[i].id == id) {
       stations[i].minsFromStation = utility.minsFromStation(stations[i].lat[0], stations[i].long[0], yourLat, yourLon);
       return (stations[i]);
     }
@@ -65,15 +88,15 @@ bikeshare.getStationById = function (req, result) {
 };
 
 bikeshare.station = function(req, res) {
-  bikeshare.fetcher(req, res, "station");
+  bikeshare.fetcher(res, "station", req.params.id);
 };
 
 bikeshare.all = function(req, res){
-  bikeshare.fetcher(req, res, "all");
+  bikeshare.fetcher(res, "all");
 };
 
 bikeshare.nearest = function(req, res) {
-  bikeshare.fetcher(req, res, "nearest");
+  bikeshare.fetcher(res, "nearest");
 };
 
 exports.bikeshare = bikeshare;
@@ -100,10 +123,11 @@ var sampleData = {
   ] },
   bikeshare: { stations: [
       { location: "Tenley Circle",
-        distance: 1.06,
+        minutes: 22.10,
         coordinates: { lat: 32.954, lon: -76.100 },
         bikes: 19,
-        docks: 4
+        docks: 4,
+        id: 44
       }
     ]
   } 
@@ -114,5 +138,24 @@ exports.sample = function(req, res){
 };
 
 exports.compress = function(req, res){
-  
+  async.auto({
+    getMetro: function(callback) {
+      callback(null);
+    },
+    getBus: function(callback) {
+      callback(null);
+    },
+    getBikeshare: function(callback) {
+      bikeshare.fetcher(callback, "compressor");
+    },
+    compressAndSend: ["getMetro", "getBus", "getBikeshare", function(callback, r) {
+      var data = {
+        metro: r["getMetro"],
+        bus: r["getBus"],
+        bikeshare: {stations: r["getBikeshare"]}
+      };
+      res.json(data);
+      callback(null);
+    }]
+  });
 }
