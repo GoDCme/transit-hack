@@ -30,7 +30,12 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 app.get('/users', user.list);
-app.get('/data', data.sample)
+app.get('/data', data.compress);
+app.get('/data/sample', data.sample);
+app.get('/bikeshare/nearest', data.bikeshare.nearest);
+app.get('/bikeshare/:id', data.bikeshare.station);
+app.get('/bikeshare', data.bikeshare.all);
+app.get('/metro/:id')
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
