@@ -2,6 +2,7 @@ body {
   font: 14px Helvetica, Arial, sans-serif;
   padding: 0;
   margin: 0;
+  overflow:none;
 }
 
 a {
@@ -22,6 +23,9 @@ a {
 
 #container-mobile-header {
   background-color:rgb(41,41,41);
+  position:fixed;
+  width:100%;
+  top:0;
 }
 
 #container-mobile-header .address-lookup {
@@ -85,7 +89,7 @@ a {
 }
 
 .metro-container {
-  padding-top:40px;
+  padding-top:80px;
 }
 
 .metro-station-small{
@@ -105,6 +109,12 @@ a {
 
 .station-minutes{
 	color:#5d6060;
+	font-size:15px;
+	font-style: italic;
+}
+
+.bikeshare-container .station-minutes{
+	color:#790000;
 	font-size:15px;
 	font-style: italic;
 }
@@ -136,7 +146,7 @@ a {
 }
 
 .bus-container {
-  padding-top:50px;
+  padding-top:80px;
 }
 
 .bus-station-small{
@@ -184,7 +194,7 @@ a {
 }
 
 .bikeshare-container {
-  padding-top:50px;
+  padding-top:80px;
 }
 
 .bikeshare-station{
@@ -232,6 +242,7 @@ a {
 .bikeshare-station-header  *{
   font-size:10px;
   text-transform:uppercase;
+  color:#790000
 }
 
 .bus-station-small .station-minutes{

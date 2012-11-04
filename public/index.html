@@ -16,6 +16,8 @@
     var Templates = {};
     $(document).on("ready", function(){
       var doShitMoreBetter = function(p) {
+        $("#container-mobile-map").html("")
+        $("#container-mobile-data").html("")
         // I've been coding for twenty four hours, I name my functions whatever I want
         
         $.ajax({
@@ -148,7 +150,9 @@
               routes[r].subs[bus.direction].direction = bus.direction;
               routes[r].subs[bus.direction].destination = bus.destination;
             }
-            routes[r].subs[bus.direction].buses.push(bus);
+            if (routes[r].subs[bus.direction].buses.length < 2) {
+              routes[r].subs[bus.direction].buses.push(bus);
+            }
           }
           
           routes[r].subroutes = [];
