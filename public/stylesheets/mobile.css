@@ -106,6 +106,7 @@ a {
 
 .metro-train{
 	display:block;
+	padding-bottom:15px;
 }
 
 .train-minutes{
@@ -154,4 +155,46 @@ a {
 
 .bus-route-text{
 	width:60%;
+}
+
+.bus-route-direction *{
+	display: inline-block;
+}
+
+.bikeshare-station{
+	background-color:#bb360c;
+	border-radius: 4px;
+	padding:10px;
+	box-shadow:0px 5px 0px #a12b06;
+	margin-bottom:10px;
+	font-family:Helvetica, Arial, sans-serif;
+	font-size: 20px;
+	color:white;
+}
+
+.bikeshare-station-info *{
+	display: inline-block;
+}
+
+.station-chart{
+	float:left;
+	padding-right:20px;
+}
+
+.station-bikes{
+	color:white;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.station-docks{
+	color:black;
+	font-weight: bold;
+	font-size: 20px;
+}
+
+.bus-station-small .station-minutes{
+	color:#5ea4eb;
+	font-size:15px;
+	font-style: italic;
 }
