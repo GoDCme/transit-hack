@@ -15,95 +15,111 @@
   <script>
     var Templates = {};
     $(document).on("ready", function(){
-      if (navigator.geolocation) { 
-        navigator.geolocation.getCurrentPosition(function(p){ 
-          $.ajax({
-            url: "/data",
-            data: {lat: p.coords.latitude, lon: p.coords.longitude},
-            success: function(data) {
-              $("#main").html(Templates["container"](data));
-              
-              var url = GMaps.staticMapURL({
-                size: [$(window).width(), $(window).height() - 60],
-                lat: p.coords.latitude,
-                lng: p.coords.longitude
-              });
-              
-              $('#container-mobile-map').css({
-                "background-image": "url(" + url + ")",
-                "background-repeat": "no-repeat",
-                "width": $(window).width(),
-                "height": $(window).height()
-              });
-              
-              var address = GMaps.geocode({
-                lat: p.coords.latitude,
-                lng: p.coords.longitude,
-                callback: function(results, status) {
-                  if (status === "OK") {
-                    var address = results[0].formatted_address;
-                    $(".address-lookup").val(address.split(",")[0]);
-                  }
+      var doShitMoreBetter = function(p) {
+        // I've been coding for twenty four hours, I name my functions whatever I want
+        
+        $.ajax({
+          url: "/data",
+          data: {lat: p.coords.latitude, lon: p.coords.longitude},
+          success: function(data) {
+            var url = GMaps.staticMapURL({
+              size: [$(window).width(), $(window).height() - 60],
+              lat: p.coords.latitude,
+              lng: p.coords.longitude
+            });
+            
+            $('#container-mobile-map').css({
+              "background-image": "url(" + url + ")",
+              "background-repeat": "no-repeat",
+              "width": $(window).width(),
+              "height": $(window).height()
+            });
+            
+            var address = GMaps.geocode({
+              lat: p.coords.latitude,
+              lng: p.coords.longitude,
+              callback: function(results, status) {
+                if (status === "OK") {
+                  var address = results[0].formatted_address;
+                  $(".address-lookup").val(address.split(",")[0]);
                 }
-              });
-                
-              // All the metro!
-              $("#container-mobile-data").html(Templates["metro-small"](data.metro));
-              $(".metro-station-trains .train-color").each(function(){
-                var color;
-                switch ($(this).data("color")) {
-                  case "RD":
-                    color = "red"; break;
-                  case "BL":
-                    color = "blue"; break;
-                  case "GR":
-                    color = "green"; break;
-                  case "OR":
-                    color = "orange"; break;
-                  case "YL":
-                    color = "yellow"; break;
-                  default:
-                    color = "gray"; break;
-                }
-                $(this).sparkline([1], {
-                    type: 'pie',
-                    width: '20',
-                    height: '20',
-                    sliceColors: [color],
-                    offset: 270
-                    });
-              });
+              }
+            });
               
-              // All the buses!
-              $("#container-mobile-data").append(Templates["bus-small"](data.bus));
+            // All the metro!
+            $("#container-mobile-data").html(Templates["metro-small"](data.metro));
+            
+            // All the buses!
+            $("#container-mobile-data").append(Templates["bus-small"](data.bus));
+            
+            // All the bikeshares!
+            $("#container-mobile-data").append(Templates["bikeshare"](data.bikeshare));
+            
+            
+            $(".mobile-button").on("click touch", function(){
               
-              // All the bikeshares!
-              $("#container-mobile-data").append(Templates["bikeshare"](data.bikeshare));
-              $(".bikeshare-station-info .station-chart").each(function(){
-                $(this).sparkline([parseInt($(this).data("bikes")),parseInt($(this).data("docks"))], {
-                    type: 'pie',
-                    width: '50',
-                    height: '50',
-                    sliceColors: ['black','white'],
-                    offset: 270,
-                    borderWidth: 1,
-                    borderColor: '#ff0000'});
-              });
+              $("#container-mobile-data").append($("#container-mobile-map").html());
+              $("#container-mobile-map").html("");
               
-              $(".mobile-button").on("click touch", function(){
-                var button = $(this).data("button");
-                switch (button) {
-                  case "metro":
-                    $("#container-mobile-map").append($(".metro-container")); break;
-                  default:
-                    break;
-                }
-              });
-            }
-          });
-        }); 
+              var button = $(this).data("button");
+              switch (button) {
+                case "metro":
+                  $("#container-mobile-map").append($(".metro-container")); 
+                  $(".metro-station-trains .train-color").each(function(){
+                    var color;
+                    switch ($(this).data("color")) {
+                      case "RD":
+                        color = "red"; break;
+                      case "BL":
+                        color = "blue"; break;
+                      case "GR":
+                        color = "green"; break;
+                      case "OR":
+                        color = "orange"; break;
+                      case "YL":
+                        color = "yellow"; break;
+                      default:
+                        color = "white"; break;
+                    }
+                    $(this).sparkline([1], {
+                        type: 'pie',
+                        width: '20',
+                        height: '20',
+                        sliceColors: [color],
+                        offset: 270
+                        });
+                  });
+                  break;
+                case "bus":
+                  $("#container-mobile-map").append($(".bus-container"));
+                  break;
+                case "bikeshare":
+                  $("#container-mobile-map").append($(".bikeshare-container"));
+                  $(".bikeshare-station-info .station-chart").each(function(){
+                    $(this).sparkline([parseInt($(this).data("bikes")),parseInt($(this).data("docks"))], {
+                        type: 'pie',
+                        width: '50',
+                        height: '50',
+                        sliceColors: ['black','white'],
+                        offset: 270,
+                        borderWidth: 1,
+                        borderColor: '#ff0000'});
+                  });
+                  break;
+                default:
+                  break;
+              }
+            });
+            
+            $("#container-mobile-map").on("click touch", function(){
+              $("#container-mobile-data").append($("#container-mobile-map").html());
+              $("#container-mobile-map").html("");
+            });
+          }
+        });
+        
       }
-
+      
       Handlebars.registerHelper("time", function(time){
         if (isNaN(parseInt(time))) {
           return "0m";
@@ -149,6 +165,11 @@
       $(".handlebars-template").each(function(){
         Templates[$(this).data("template")] = Handlebars.compile($(this).html());
       });
+      $("#main").html(Templates["container"]());
+      
+      if (navigator.geolocation) { 
+        navigator.geolocation.getCurrentPosition(doShitMoreBetter);
+      }
       
     });
   </script>
@@ -185,12 +206,12 @@
       <div class="bikeshare-station" data-lat="{{coordinates.lat}}" data-lon="{{coordinates.lon}}" data-id="{{id}}">
         <div class="bikeshare-station-header">
           <div class="station-chart"></div>
-          <div class="station-location">Station Location</div>
-          <div class="station-bikes">Station Bikes</div>
-          <div class="station-docks">Station Docks</div>
+          <div class="station-name"></div>
+          <div class="station-bikes">Bikes</div>
+          <div class="station-docks">Docks</div>
         </div>
         <div class="bikeshare-station-info">
-          <div class="station-chart" data-bikes="{{bikes}}" data-docks="{{docks}}"></div>
+          <div class="station-chart" data-docks="{{bikes}}" data-bikes="{{docks}}"></div>
           <div class="station-name">{{location}}</div>
           <div class="station-bikes">{{bikes}}</div>
           <div class="station-docks">{{docks}}</div>

@@ -85,7 +85,7 @@ a {
 }
 
 .metro-container {
-  padding-top:20px;
+  padding-top:40px;
 }
 
 .metro-station-small{
@@ -121,7 +121,7 @@ a {
 
 .train-color{
 	float:left;
-	padding-right:20px;
+	padding-right:10px;
 }
 
 .metro-station-trains{
@@ -135,35 +135,56 @@ a {
 	display: inline-block;
 }
 
+.bus-container {
+  padding-top:50px;
+}
+
 .bus-station-small{
 	background-color:#2f7ac7;
 	border-radius: 4px;
 	padding:10px;
 	box-shadow:0px 5px 0px #044e86;
-	margin-bottom:10px;
+	margin:0px auto;
 	font-family:Helvetica, Arial, sans-serif;
-	font-size: 20px;
+	font-size: 18px;
 	color:white;
+	width:270px;
 }
 
 .bus-route-id{
-	float:left;
-	padding-right:20px;
+	width:40px;
 	font-size:30px;
 	color:white;
 	font-weight: bold;
+	display:inline-block;
+	vertical-align:top;
+}
+
+.bus-route-directions {
+  display:inline-block;
+  width:220px;
+  overflow:hidden;
 }
 
 .bus-route-minutes{
 	color:#044e86;
 }
 
+.bus-route-info {
+  padding-bottom:7px;
+}
+
 .bus-route-text{
 	width:60%;
+	font-size:14px;
 }
 
 .bus-route-direction *{
 	display: inline-block;
+}
+
+.bikeshare-container {
+  padding-top:50px;
 }
 
 .bikeshare-station{
@@ -171,39 +192,50 @@ a {
 	border-radius: 4px;
 	padding:10px;
 	box-shadow:0px 5px 0px #a12b06;
-	margin-bottom:10px;
+	margin:0px auto;
 	font-family:Helvetica, Arial, sans-serif;
 	font-size: 20px;
 	color:white;
-}
-
-.bikeshare-station-info *{
-	display: inline-block;
+	width:270px;
 }
 
 .station-chart{
-	float:left;
-	padding-right:20px;
+	display: inline-block;
+	width:50px;
+	vertical-align:top;
 }
 
 .station-bikes{
 	color:white;
 	font-weight: bold;
 	font-size: 20px;
+	display:inline-block;
+	width:30px;
+	vertical-align:top;
+}
+
+.station-name {
+  width:140px;
+  font-size:16px;
+  display:inline-block;
 }
 
 .station-docks{
 	color:black;
 	font-weight: bold;
 	font-size: 20px;
+	display:inline-block;
+	vertical-align:top;
+	width:30px;
+}
+
+.bikeshare-station-header  *{
+  font-size:10px;
+  text-transform:uppercase;
 }
 
 .bus-station-small .station-minutes{
 	color:#5ea4eb;
 	font-size:15px;
 	font-style: italic;
-}
-
-#metro-container {
-  margin:20px;
 }

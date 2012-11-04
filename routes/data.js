@@ -92,7 +92,7 @@ bikeshare.getNearest = function(result) {
     stations[i].minsFromStation = utility.minsFromStation(stations[i].lat[0], stations[i].long[0], yourLat, yourLon);
   }
   stations = u.sortBy(stations, function(s){ return s.minsFromStation });
-  return u.first(stations, 5);
+  return u.first(stations, 4);
 };
 
 bikeshare.getStationById = function (result, id) {
@@ -130,7 +130,7 @@ metro.nearest = function() {
     s.trains = [];
     return s;
   });
-  return u.first(u.sortBy(stations, function(s) { return s.minutes; }), 5);
+  return u.first(u.sortBy(stations, function(s) { return s.minutes; }), 2);
 }
 
 metro.fetcher = function(callback) {
@@ -144,7 +144,7 @@ metro.fetcher = function(callback) {
           if ((nearest[i].code === trains[t].LocationCode) || (nearest[i].alias === trains[t].LocationCode)) {
             if (trains[t].DestinationCode) {
               nearest[i].trains.push({
-                to: trains[t].DestinationName,
+                to: trains[t].DestinationName.split("-")[0],
                 line: trains[t].Line,
                 time: trains[t].Min,
                 cars: trains[t].Car
@@ -188,7 +188,7 @@ bus.fetcher = function(callback) {
       });
       
       async.map(stops, bus.stopFetcher, function(err, stops){
-        callback(null, {stations: u.compact(stops)});
+        callback(null, {stations: u.first(u.compact(stops), 2)});
       });      
     }
   });
@@ -203,7 +203,7 @@ bus.stopFetcher = function(stop, callback) {
         var bus = buses[i];
         stop.buses.push({
           direction: bus.DirectionText.split(" to ")[0],
-          destination: bus.DirectionText.split(" to ")[1],
+          destination: (bus.DirectionText.split(" to ")[1]).split(" Station")[0],
           route: bus.RouteID,
           minutes: bus.Minutes
         });
