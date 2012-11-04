@@ -1,27 +1,224 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <style>
+    .station-chart {
+      width:50px;
+      height:50px;
+      display:inline-block;
+    }
+  </style>
 </head>
 <body>
-  <div id="info">
-    content here
+  <div id="main">
+    
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="/javascripts/jquery.sparkline.min.js"></script>
+  <script src="/javascripts/handlebars-1.0.rc.1.min.js"></script>
   <script>
+    var Templates = {};
     $(document).on("ready", function(){
       if (navigator.geolocation) { 
         navigator.geolocation.getCurrentPosition(function(p){ 
-          var lat = p.coords.latitude, lon = p.coords.longitude;
           $.ajax({
             url: "/data",
-            data: {lat: lat, lon: lon},
+            data: {lat: p.coords.latitude, lon: p.coords.longitude},
             success: function(data) {
-              $("#info").text(JSON.stringify(data))
+              $("#main").html(Templates["container"](data));
+              
+              // All the metro!
+              $("#container-mobile-map").html(Templates["metro-small"](data.metro));
+              $(".metro-station-trains .train-color").each(function(){
+                var color;
+                switch ($(this).data("color")) {
+                  case "RD":
+                    color = "red"; break;
+                  case "BL":
+                    color = "blue"; break;
+                  case "GR":
+                    color = "green"; break;
+                  case "OR":
+                    color = "orange"; break;
+                  case "YL":
+                    color = "yellow"; break;
+                  default:
+                    color = "gray"; break;
+                }
+                $(this).sparkline([1], {
+                    type: 'pie',
+                    width: '20',
+                    height: '20',
+                    sliceColors: [color],
+                    offset: 270,
+                    borderWidth: 1,
+                    borderColor: '#000000'});
+              });
+              
+              // All the buses!
+              $("#container-mobile-map").append(Templates["bus-small"](data.bus));
+              
+              // All the bikeshares!
+              $("#container-mobile-map").append(Templates["bikeshare"](data.bikeshare));
+              $(".bikeshare-station-info .station-chart").each(function(){
+                $(this).sparkline([parseInt($(this).data("bikes")),parseInt($(this).data("docks"))], {
+                    type: 'pie',
+                    width: '50',
+                    height: '50',
+                    sliceColors: ['black','white'],
+                    offset: 270,
+                    borderWidth: 1,
+                    borderColor: '#ff0000'});
+              });
+              
+              $("body").append(JSON.stringify(data));
             }
-          })
-        }) 
+          });
+        }); 
       }
+
+      Handlebars.registerHelper("time", function(time){
+        if (isNaN(parseInt(time))) {
+          return "0m";
+        }
+        return time + "m";
+      });
+      
+      Handlebars.registerHelper("routeBuilder", function(buses){
+        console.log(this,arguments);
+        var routes = {}, returnedHtml = "";
+        for (var i = 0; i < buses.length; i++) {
+          var bus = buses[i];
+          if (!routes[bus.route]) {
+            routes[bus.route] = [];
+          }
+          routes[bus.route].push(bus);
+        }
+        
+        for (var r in routes) {
+          routes[r].route = r;
+          routes[r].subs = {};
+          for (var i = 0; i < routes[r].length; i++) {
+            var bus = buses[i];
+            if (!routes[r].subs[bus.direction]) {
+              routes[r].subs[bus.direction] = {}
+              routes[r].subs[bus.direction].buses = [];
+              routes[r].subs[bus.direction].direction = bus.direction;
+              routes[r].subs[bus.direction].destination = bus.destination;
+            }
+            routes[r].subs[bus.direction].buses.push(bus);
+          }
+          
+          routes[r].subroutes = [];
+          for (var s in routes[r].subs) {
+            routes[r].subroutes.push(routes[r].subs[s]);
+          }
+          console.log(r, routes, routes[r].subroutes[0]);
+          
+          returnedHtml += Templates["bus-route"](routes[r]);
+        }
+        
+        return returnedHtml;
+      });
+      
+      $(".handlebars-template").each(function(){
+        Templates[$(this).data("template")] = Handlebars.compile($(this).html());
+      });
+      
     });
   </script>
+  
+  <script data-template="container" class="handlebars-template" id="template-console" type="text/x-handlebars-template">
+    <div id="container-mobile">
+      <div id="container-mobile-header">
+        <input class="address-lookup" type="text" />
+        <button class="address-geolocate">x</button>
+      </div>
+      <div id="container-mobile-map">
+      </div>
+      <div id="container-mobile-footer">
+        <button class="mobile-button">M</button>
+        <button class="mobile-button">B</button>
+        <button class="mobile-button">C</button>
+      </div>
+    </div>
+  </script>
+  
+  <script data-template="bikeshare" class="handlebars-template" id="template-bikeshare" type="text/x-handlebars-template">
+    {{#each stations}}
+      <div class="bikeshare-station" data-lat="{{coordinates.lat}}" data-lon="{{coordinates.lon}}" data-id="{{id}}">
+        <div class="bikeshare-station-header">
+          <div class="station-chart"></div>
+          <div class="station-location">Station Location</div>
+          <div class="station-bikes">Station Bikes</div>
+          <div class="station-docks">Station Docks</div>
+        </div>
+        <div class="bikeshare-station-info">
+          <div class="station-chart" data-bikes="{{bikes}}" data-docks="{{docks}}"></div>
+          <div class="station-name">{{location}}</div>
+          <div class="station-bikes">{{bikes}}</div>
+          <div class="station-docks">{{docks}}</div>
+        </div>
+        <div class="bikeshare-station-footer">
+          <div class="station-minutes">{{minutes}} minute walk to this station</div>
+        </div>
+      </div>
+    {{/each}}
+  </script>
+  
+  <script data-template="bus-small" class="handlebars-template" id="template-bus-small" type="text/x-handlebars-template">
+    {{#each stations}}
+      <div class="bus-station-small" data-lat="{{coordinates.lat}}" data-lon="{{coordinates.lon}}" data-id="{{id}}">
+        <div class="bus-station-header">
+          <div class="station-location">{{location}}</div>
+          <div class="station-minutes">{{minutes}} minute walk to this stop</div>
+        </div>
+        <div class="bus-station-info">
+          {{{routeBuilder buses}}}
+        </div>
+      </div>
+    {{/each}}
+  </script>
+  
+  <script data-template="bus-route" class="handlebars-template" id="template-bus-route" type="text/x-handlebars-template">
+    <div class="bus-route-info">
+      <div class="bus-route-id">{{route}}</div>
+      <div class="bus-route-directions">
+        {{#each subroutes}}
+        <div class="bus-route-direction">
+          <div class="bus-route-text">
+            {{direction}}bound to: {{destination}}
+          </div>
+          {{#each buses}}
+          <div class="bus-route-minutes">
+            {{minutes}}m
+          </div>
+          {{/each}}
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  </script>
+  
+  <script data-template="metro-small" class="handlebars-template" id="template-metro-small" type="text/x-handlebars-template">
+    {{#each stations}}
+      <div class="metro-station-small" data-lat="{{coordinates.lat}}" data-lon="{{coordinates.lon}}" data-code="{{code}}" {{#if alias}}data-alias="{{alias}}"{{/if}}>
+        <div class="metro-station-header">
+          <div class="station-location">{{station}}</div>
+          <div class="station-minutes">{{minutes}} minute walk to this station</div>
+        </div>
+        <div class="metro-station-trains">
+          {{#each trains}}
+            <div class="metro-train">
+              <div class="train-color" data-color="{{line}}"></div>
+              <div class="train-destination">{{to}}</div>
+              <div class="train-minutes">{{time time}}</div>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    {{/each}}
+  </script>
+  
 </body>
 </html>

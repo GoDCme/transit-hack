@@ -17,6 +17,19 @@ utility.toRadian = function(a) {
   return (a * (Math.PI / 180));
 }
 
+utility.apiKey = function() {
+  var keys = [
+    'qrc78gh5rrfhccxn3az498fa',
+    'kwjwj788vpqyhg7waekp2bum',
+    'n6xzmnmm2e753d4xsevf3gya',
+    'zr4b6b9rjn2d4954ucdu6uwn',
+    'rgfypfyhvz894fkupast3bsz',
+    'h2mzuqy94kr47th47wjwy8mc',
+    'zh5msfjerdhnt7hv7tyfynd5'
+  ]
+  return keys[u.random(keys.length - 1)];
+}
+
 utility.minsFromStation = function(lat1, lon1, lat2, lon2) {
   var dLat = utility.toRadian(lat2-lat1);
   var dLon = utility.toRadian(lon2-lon1);
@@ -60,7 +73,7 @@ bikeshare.cleanData = function(data) {
     stations.push({ 
       id: stop.id[0],
       location: stop.name[0],
-      minutes: stop.minsFromStation,
+      minutes: Math.round(stop.minsFromStation),
       bikes: stop.nbBikes[0],
       docks: stop.nbEmptyDocks[0],
       coordinates: {
@@ -123,7 +136,7 @@ metro.nearest = function() {
 metro.fetcher = function(callback) {
   var nearest = metro.nearest();
   var keys = u.flatten(u.map(nearest, function(s) { return (s.alias ? [s.code, s.alias] : s.code )})).join(',');
-  rq('http://api.wmata.com/StationPrediction.svc/json/GetPrediction/' + keys + '?api_key=qrc78gh5rrfhccxn3az498fa', function(error, response, body) {
+  rq('http://api.wmata.com/StationPrediction.svc/json/GetPrediction/' + keys + '?api_key=' + utility.apiKey(), function(error, response, body) {
     if (body) {
       var trains = JSON.parse(body).Trains;
       for (var i = 0; i < nearest.length; i++) {
@@ -138,8 +151,9 @@ metro.fetcher = function(callback) {
             }
           }
         }
+        nearest[i].minutes = Math.round(nearest[i].minutes);
       }
-      callback(null, nearest)
+      callback(null, {stations: nearest});
     }
     else {
       callback(null, "unable to access Metro data");
@@ -152,7 +166,7 @@ exports.metro = metro;
 /************************/
 
 bus.fetcher = function(callback) {
-  rq("http://api.wmata.com/Bus.svc/json/JStops?lat=" + yourLat + "&lon=" + yourLon + "&radius=500&api_key=qrc78gh5rrfhccxn3az498fa", function(error, response, body){
+  rq("http://api.wmata.com/Bus.svc/json/JStops?lat=" + yourLat + "&lon=" + yourLon + "&radius=500&api_key=" + utility.apiKey(), function(error, response, body){
     if (body) {
       var stops = u.first(JSON.parse(body).Stops, 5);
       stops = u.map(stops, function(s){
@@ -162,7 +176,7 @@ bus.fetcher = function(callback) {
             lon: s.Lon,
           },
           id: s.StopID,
-          minutes: utility.minsFromStation(s.Lat, s.Lon, yourLat, yourLon),
+          minutes: Math.round(utility.minsFromStation(s.Lat, s.Lon, yourLat, yourLon)),
           location: s.Name,
           routes: u.filter(s.Routes, function(r){
             return u.all(r, function(character){
@@ -173,14 +187,14 @@ bus.fetcher = function(callback) {
       });
       
       async.map(stops, bus.stopFetcher, function(err, stops){
-        callback(null, stops);
+        callback(null, {stations: u.compact(stops)});
       });      
     }
   });
 }
 
 bus.stopFetcher = function(stop, callback) {
-  rq("http://api.wmata.com/NextBusService.svc/json/JPredictions?StopID="+ stop.id +"&api_key=kwjwj788vpqyhg7waekp2bum", function(error, response, body){
+  rq("http://api.wmata.com/NextBusService.svc/json/JPredictions?StopID="+ stop.id +"&api_key=" + utility.apiKey(), function(error, response, body){
     if (body) {
       var buses = JSON.parse(body).Predictions;
       stop.buses = [];
@@ -193,7 +207,12 @@ bus.stopFetcher = function(stop, callback) {
           minutes: bus.Minutes
         });
       }
-      callback(null, stop);
+      if (stop.buses.length > 0) {
+        callback(null, stop);
+      }
+      else {
+        callback(null);
+      }
     }
   });
 }
