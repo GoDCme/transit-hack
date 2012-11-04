@@ -35,7 +35,7 @@
               "height": $(window).height()
             });
             
-            var address = GMaps.geocode({
+            GMaps.geocode({
               lat: p.coords.latitude,
               lng: p.coords.longitude,
               callback: function(results, status) {
@@ -167,10 +167,26 @@
       });
       $("#main").html(Templates["container"]());
       
+      $(".address-geolocate").on("click touch", function(){
+        GMaps.geocode({
+          address: $(".address-lookup").val(),
+          callback: function(results, status) {
+            if (status === "OK") {
+              var result = results[0].geometry.location;
+              doShitMoreBetter({
+                coords: { 
+                  latitude: result.Ya, 
+                  longitude: result.Za 
+                }
+              });
+            }
+          }
+        });
+      });
+      
       if (navigator.geolocation) { 
         navigator.geolocation.getCurrentPosition(doShitMoreBetter);
-      }
-      
+      } 
     });
   </script>
   
