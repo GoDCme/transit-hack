@@ -151,6 +151,53 @@ exports.metro = metro;
 
 /************************/
 
+bus.fetcher = function(callback) {
+  rq("http://api.wmata.com/Bus.svc/json/JStops?lat=" + yourLat + "&lon=" + yourLon + "&radius=500&api_key=qrc78gh5rrfhccxn3az498fa", function(error, response, body){
+    if (body) {
+      var stops = u.first(JSON.parse(body).Stops, 5);
+      stops = u.map(stops, function(s){
+        return {
+          coordinates: {
+            lat: s.Lat,
+            lon: s.Lon,
+          },
+          id: s.StopID,
+          minutes: utility.minsFromStation(s.Lat, s.Lon, yourLat, yourLon),
+          location: s.Name,
+          routes: u.filter(s.Routes, function(r){
+            return u.all(r, function(character){
+              return (character === character.toUpperCase());
+            })
+          })
+        }
+      });
+      
+      async.map(stops, bus.stopFetcher, function(err, stops){
+        callback(null, stops);
+      });      
+    }
+  });
+}
+
+bus.stopFetcher = function(stop, callback) {
+  rq("http://api.wmata.com/NextBusService.svc/json/JPredictions?StopID="+ stop.id +"&api_key=kwjwj788vpqyhg7waekp2bum", function(error, response, body){
+    if (body) {
+      var buses = JSON.parse(body).Predictions;
+      stop.buses = [];
+      for (var i = 0; i < buses.length; i++) {
+        var bus = buses[i];
+        stop.buses.push({
+          direction: bus.DirectionText.split(" to ")[0],
+          destination: bus.DirectionText.split(" to ")[1],
+          route: bus.RouteID,
+          minutes: bus.Minutes
+        });
+      }
+      callback(null, stop);
+    }
+  });
+}
+
 exports.bus = bus;
 
 exports.compress = function(req, res){
@@ -159,10 +206,9 @@ exports.compress = function(req, res){
   async.auto({
     getMetro: function(callback) {
       metro.fetcher(callback);
-      //callback(null, metro.fetcher);
     },
     getBus: function(callback) {
-      callback(null)
+      bus.fetcher(callback);
     },
     getBikeshare: function(callback) {
       bikeshare.fetcher(callback, "compressor");
