@@ -3,9 +3,10 @@ var xml2js = require('xml2js');
 var parser = new xml2js.Parser();
 var u = require('underscore');
 var async = require('async');
+var jsdom = require("jsdom");
 
 var yourLat = 38.960744;
-var yourLon = -77.086258;
+var yourLon = -77.086258; //Microsoft Friendship Heights coordinates
 
 var bikeshare = {};
 var metro = {};
@@ -78,7 +79,7 @@ bikeshare.getNearest = function(result) {
     stations[i].minsFromStation = utility.minsFromStation(stations[i].lat[0], stations[i].long[0], yourLat, yourLon);
   }
   stations = u.sortBy(stations, function(s){ return s.minsFromStation });
-  return u.first(stations, 3);
+  return u.first(stations, 5);
 };
 
 bikeshare.getStationById = function (result, id) {
@@ -116,7 +117,7 @@ metro.nearest = function() {
     s.trains = [];
     return s;
   });
-  return u.first(u.sortBy(stations, function(s) { return s.minutes; }), 3);
+  return u.first(u.sortBy(stations, function(s) { return s.minutes; }), 5);
 }
 
 metro.fetcher = function(callback) {
@@ -138,7 +139,7 @@ metro.fetcher = function(callback) {
           }
         }
       }
-      callback(null, {stations: nearest, trains: trains})
+      callback(null, nearest)
     }
     else {
       callback(null, "unable to access Metro data");
@@ -148,50 +149,20 @@ metro.fetcher = function(callback) {
 
 exports.metro = metro;
 
-var sampleData = {  
-  metro: { stations: [
-    { station: "Friendship Heights", 
-      colors: [ "R" ], 
-      minutes: 10.64,
-      coordinates: { lat: 32.534, lon: -76.035 },
-      lines: [
-        { to: "Shady Grove", color: "R", time: [2, 18] },
-        { to: "Glenmont", color: "R", time: [11] }       
-      ] }
-  ] },
-  bus: { stops: [
-      { location: "Wisconsin Ave and Western Ave",
-        distance: 0.24,
-        coordinates: { lat: 32.586, lon: -76.103 },
-        lines: [
-          { route: "H2", direction: "WEST", time: [ 9, 39 ] },
-          { route: "H2", direction: "EAST", time: [ 15, 40 ] },
-        ] }
-  ] },
-  bikeshare: { stations: [
-      { location: "Tenley Circle",
-        minutes: 22.10,
-        coordinates: { lat: 32.954, lon: -76.100 },
-        bikes: 19,
-        docks: 4,
-        id: 44
-      }
-    ]
-  } 
-};
+/************************/
 
-exports.sample = function(req, res){
-  res.json(sampleData);
-};
+exports.bus = bus;
 
 exports.compress = function(req, res){
+  yourLat = req.query.lat || yourLat;
+  yourLon = req.query.lon || yourLon;
   async.auto({
     getMetro: function(callback) {
       metro.fetcher(callback);
       //callback(null, metro.fetcher);
     },
     getBus: function(callback) {
-      callback(null);
+      callback(null)
     },
     getBikeshare: function(callback) {
       bikeshare.fetcher(callback, "compressor");
