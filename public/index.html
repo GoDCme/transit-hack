@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+  <div id="info">
+    content here
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script>
+    $(document).on("ready", function(){
+      if (navigator.geolocation) { 
+        navigator.geolocation.getCurrentPosition(function(p){ 
+          var lat = p.coords.latitude, lon = p.coords.longitude;
+          $.ajax({
+            url: "/data",
+            data: {lat: lat, lon: lon},
+            success: function(data) {
+              $("#info").text(JSON.stringify(data))
+            }
+          })
+        }) 
+      }
+    });
+  </script>
+</body>
+</html>
