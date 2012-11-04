@@ -2,7 +2,6 @@ body {
   font: 14px Helvetica, Arial, sans-serif;
   padding: 0;
   margin: 0;
-  overflow:hidden;
 }
 
 a {
@@ -16,9 +15,9 @@ a {
 
 #container-mobile-map {
   display:block;
-  overflow:hidden;
   width:100%;
   height:100%;
+  background-attachment:fixed;
 }
 
 #container-mobile-header {
@@ -61,6 +60,7 @@ a {
   float:left;
   text-align:center;
   border:none;
+  cursor:pointer;
 }
 
 
@@ -84,12 +84,17 @@ a {
   border-top:8px solid rgb(138,0,14);
 }
 
+.metro-container {
+  padding-top:20px;
+}
+
 .metro-station-small{
 	background-color:#252525;
 	border-radius: 4px;
 	padding:10px;
 	box-shadow:0px 5px 0px black;
-	margin-bottom:10px;
+	margin:0px auto;
+	width:270px;
 }
 
 .station-location{
@@ -197,4 +202,8 @@ a {
 	color:#5ea4eb;
 	font-size:15px;
 	font-style: italic;
+}
+
+#metro-container {
+  margin:20px;
 }
