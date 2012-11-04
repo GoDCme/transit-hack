@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    .station-chart {
-      width:50px;
-      height:50px;
-      display:inline-block;
-    }
-  </style>
+  <link rel="stylesheet" href="/stylesheets/mobile.css" />
 </head>
 <body>
   <div id="main">
     
   </div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+  <script src="/javascripts/gmaps.js" async="false"></script>
   <script src="/javascripts/jquery.sparkline.min.js"></script>
   <script src="/javascripts/handlebars-1.0.rc.1.min.js"></script>
   <script>
@@ -21,14 +17,38 @@
     $(document).on("ready", function(){
       if (navigator.geolocation) { 
         navigator.geolocation.getCurrentPosition(function(p){ 
+          
           $.ajax({
             url: "/data",
             data: {lat: p.coords.latitude, lon: p.coords.longitude},
             success: function(data) {
               $("#main").html(Templates["container"](data));
               
+              var url = GMaps.staticMapURL({
+                size: [$(window).width(), $(window).height()],
+                lat: p.coords.latitude,
+                lng: p.coords.longitude
+              });
+              
+              $('#container-mobile-map').css({
+                "background": "url(" + url + ") no-repeat",
+                "width": $(window).width(),
+                "height": $(window).height()
+              });
+              
+              var address = GMaps.geocode({
+                lat: p.coords.latitude,
+                lng: p.coords.longitude,
+                callback: function(results, status) {
+                  if (status === "OK") {
+                    var address = results[0].formatted_address;
+                    $(".address-lookup").val(address.split(",")[0]);
+                  }
+                }
+              });
+                
               // All the metro!
-              $("#container-mobile-map").html(Templates["metro-small"](data.metro));
+              $("#container-mobile-data").html(Templates["metro-small"](data.metro));
               $(".metro-station-trains .train-color").each(function(){
                 var color;
                 switch ($(this).data("color")) {
@@ -50,16 +70,15 @@
                     width: '20',
                     height: '20',
                     sliceColors: [color],
-                    offset: 270,
-                    borderWidth: 1,
-                    borderColor: '#000000'});
+                    offset: 270
+                    });
               });
               
               // All the buses!
-              $("#container-mobile-map").append(Templates["bus-small"](data.bus));
+              $("#container-mobile-data").append(Templates["bus-small"](data.bus));
               
               // All the bikeshares!
-              $("#container-mobile-map").append(Templates["bikeshare"](data.bikeshare));
+              $("#container-mobile-data").append(Templates["bikeshare"](data.bikeshare));
               $(".bikeshare-station-info .station-chart").each(function(){
                 $(this).sparkline([parseInt($(this).data("bikes")),parseInt($(this).data("docks"))], {
                     type: 'pie',
@@ -70,8 +89,6 @@
                     borderWidth: 1,
                     borderColor: '#ff0000'});
               });
-              
-              $("body").append(JSON.stringify(data));
             }
           });
         }); 
@@ -85,7 +102,6 @@
       });
       
       Handlebars.registerHelper("routeBuilder", function(buses){
-        console.log(this,arguments);
         var routes = {}, returnedHtml = "";
         for (var i = 0; i < buses.length; i++) {
           var bus = buses[i];
@@ -113,7 +129,6 @@
           for (var s in routes[r].subs) {
             routes[r].subroutes.push(routes[r].subs[s]);
           }
-          console.log(r, routes, routes[r].subroutes[0]);
           
           returnedHtml += Templates["bus-route"](routes[r]);
         }
@@ -132,14 +147,24 @@
     <div id="container-mobile">
       <div id="container-mobile-header">
         <input class="address-lookup" type="text" />
-        <button class="address-geolocate">x</button>
+        <div class="address-geolocate">
+          <img src="/images/gpscoordinates.png" />
+        </div>
       </div>
       <div id="container-mobile-map">
       </div>
+      <div id="container-mobile-data">
+      </div>
       <div id="container-mobile-footer">
-        <button class="mobile-button">M</button>
-        <button class="mobile-button">B</button>
-        <button class="mobile-button">C</button>
+        <div class="mobile-button metro" data-button="metro">
+          <img src="/images/metro.png" />
+        </div>
+        <div class="mobile-button bus" data-button="bus">
+          <img src="/images/bus.png" />          
+        </div>
+        <div class="mobile-button bikeshare" data-button="bikeshare">
+          <img src="/images/cabi.png" />          
+        </div>
       </div>
     </div>
   </script>
@@ -211,6 +236,7 @@
           {{#each trains}}
             <div class="metro-train">
               <div class="train-color" data-color="{{line}}"></div>
+              <div class="train-car">{{car}}</div>
               <div class="train-destination">{{to}}</div>
               <div class="train-minutes">{{time time}}</div>
             </div>

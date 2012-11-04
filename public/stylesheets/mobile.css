@@ -1,0 +1,157 @@
+body {
+  font: 14px Helvetica, Arial, sans-serif;
+  padding: 0;
+  margin: 0;
+  overflow:hidden;
+}
+
+a {
+  color: #00B7FF;
+}
+
+#container-mobile {
+  width:100%;
+  height:100%;
+}
+
+#container-mobile-map {
+  display:block;
+  overflow:hidden;
+  width:100%;
+  height:100%;
+}
+
+#container-mobile-header {
+  background-color:rgb(41,41,41);
+}
+
+#container-mobile-header .address-lookup {
+  background-color:rgb(28,28,28);
+  margin:8px;
+  height:24px;
+  font-size:14px;
+  line-height:14px;
+  color:rgb(201,201,201);
+  width:70%;
+  border:none;
+}
+
+#container-mobile-header .address-geolocate {
+  float:right;
+  margin:5px;
+}
+
+#container-mobile-header .address-geolocate img {
+  height:30px;
+  width:30px;
+}
+
+#container-mobile-data {
+  display:none;
+}
+
+#container-mobile-footer {
+  width:100%;
+  position:fixed;
+  bottom:0;
+}
+
+#container-mobile-footer .mobile-button {
+  width:33.333333%;
+  float:left;
+  text-align:center;
+  border:none;
+}
+
+
+#container-mobile-footer .mobile-button img {
+  height:30px;
+  padding:10px 0px;
+}
+
+#container-mobile-footer .mobile-button.metro {
+  background-color:rgb(41,41,41);
+  border-top:8px solid rgb(93,93,93);
+}
+
+#container-mobile-footer .mobile-button.bus {
+  background-color:rgb(28,28,28);
+  border-top:8px solid rgb(38,100,187);
+}
+
+#container-mobile-footer .mobile-button.bikeshare {
+  background-color:rgb(14,14,14);
+  border-top:8px solid rgb(138,0,14);
+}
+
+.metro-station-small{
+	background-color:#252525;
+	border-radius: 4px;
+	padding:10px;
+	box-shadow:0px 5px 0px black;
+	margin-bottom:10px;
+}
+
+.station-location{
+	font-family:Helvetica, Arial, sans-serif;
+	font-size:25px;
+	color:white;
+}
+
+.station-minutes{
+	color:#5d6060;
+	font-size:15px;
+	font-style: italic;
+}
+
+.metro-train{
+	display:block;
+}
+
+.train-minutes{
+	color:#686868;
+}
+
+
+.train-color{
+	float:left;
+	padding-right:20px;
+}
+
+.metro-station-trains{
+	margin-top:20px;
+	font-size:20px;
+	color:white;
+	border-bottom:3px solid #2a2b2b;
+}
+
+.metro-train * {
+	display: inline-block;
+}
+
+.bus-station-small{
+	background-color:#2f7ac7;
+	border-radius: 4px;
+	padding:10px;
+	box-shadow:0px 5px 0px #044e86;
+	margin-bottom:10px;
+	font-family:Helvetica, Arial, sans-serif;
+	font-size: 20px;
+	color:white;
+}
+
+.bus-route-id{
+	float:left;
+	padding-right:20px;
+	font-size:30px;
+	color:white;
+	font-weight: bold;
+}
+
+.bus-route-minutes{
+	color:#044e86;
+}
+
+.bus-route-text{
+	width:60%;
+}

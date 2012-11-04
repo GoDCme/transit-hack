@@ -146,7 +146,8 @@ metro.fetcher = function(callback) {
               nearest[i].trains.push({
                 to: trains[t].DestinationName,
                 line: trains[t].Line,
-                time: trains[t].Min
+                time: trains[t].Min,
+                cars: trains[t].Car
               }); 
             }
           }
