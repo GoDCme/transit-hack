@@ -89,7 +89,7 @@ a {
 }
 
 .metro-container {
-  padding-top:80px;
+  padding-top:70px;
 }
 
 .metro-station-small{
@@ -98,7 +98,7 @@ a {
 	padding:10px;
 	box-shadow:0px 5px 0px black;
 	margin:0px auto;
-	width:270px;
+	width:320px;
 }
 
 .station-location{
@@ -111,12 +111,18 @@ a {
 	color:#5d6060;
 	font-size:15px;
 	font-style: italic;
+	padding-bottom:10px;
+}
+
+.train-destination {
+  width:180px;
 }
 
 .bikeshare-container .station-minutes{
-	color:#790000;
-	font-size:15px;
+	color:#931605;
+	font-size:12px;
 	font-style: italic;
+	margin-left:56px;
 }
 
 .metro-train{
@@ -146,7 +152,7 @@ a {
 }
 
 .bus-container {
-  padding-top:80px;
+  padding-top:70px;
 }
 
 .bus-station-small{
@@ -158,7 +164,7 @@ a {
 	font-family:Helvetica, Arial, sans-serif;
 	font-size: 18px;
 	color:white;
-	width:270px;
+	width:320px;
 }
 
 .bus-route-id{
@@ -172,7 +178,7 @@ a {
 
 .bus-route-directions {
   display:inline-block;
-  width:220px;
+  width:260px;
   overflow:hidden;
 }
 
@@ -182,11 +188,13 @@ a {
 
 .bus-route-info {
   padding-bottom:7px;
+  border-bottom:2px solid #54ade3;
+  padding-top:9px;
 }
 
 .bus-route-text{
-	width:60%;
-	font-size:14px;
+	width:180px;
+	font-size:16px;
 }
 
 .bus-route-direction *{
@@ -194,7 +202,7 @@ a {
 }
 
 .bikeshare-container {
-  padding-top:80px;
+  padding-top:70px;
 }
 
 .bikeshare-station{
@@ -206,7 +214,8 @@ a {
 	font-family:Helvetica, Arial, sans-serif;
 	font-size: 20px;
 	color:white;
-	width:270px;
+	width:320px;
+	border-bottom:2px solid #931605;
 }
 
 .station-chart{
@@ -242,7 +251,8 @@ a {
 .bikeshare-station-header  *{
   font-size:10px;
   text-transform:uppercase;
-  color:#790000
+  color:#931605;
+  vertical-align:top;
 }
 
 .bus-station-small .station-minutes{
